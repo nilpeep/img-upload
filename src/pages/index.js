@@ -1,10 +1,12 @@
 // components/ImageUpload.js
 
 import { useState } from "react";
+import axios from "axios";
 
 const ImageUpload = () => {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [message, setMessage] = useState("");
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -20,10 +22,32 @@ const ImageUpload = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you can handle the image upload logic, e.g., sending it to a server
-    console.log("Image uploaded:", image);
+    if (!image) {
+      setMessage("Please select an image to upload");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", image);
+
+    try {
+      const response = await axios.post(
+        "https://p16bkeode0.execute-api.eu-central-1.amazonaws.com/default/coreApp?name=dept",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      setMessage("Image uploaded successfully");
+      console.log("Image uploaded:", response.data);
+    } catch (error) {
+      setMessage("Error uploading image");
+      console.error("Error uploading image:", error);
+    }
   };
 
   return (
@@ -40,6 +64,7 @@ const ImageUpload = () => {
         )}
         <button type="submit">Upload</button>
       </form>
+      {message && <p>{message}</p>}
     </div>
   );
 };
